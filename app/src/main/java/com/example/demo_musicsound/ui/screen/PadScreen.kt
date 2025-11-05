@@ -125,7 +125,7 @@ private fun SequencerGrid(
     ) {
         items(tracks.size) { idx ->
             val pad = tracks[idx]
-            val pattern = seq.pattern(pad.resName) 
+            val pattern = seq.pattern(pad.resName)
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
