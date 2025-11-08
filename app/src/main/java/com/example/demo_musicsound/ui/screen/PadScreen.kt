@@ -1,7 +1,7 @@
 package com.example.demo_musicsound.ui.screen
 
 import android.annotation.SuppressLint
-import android.media.MediaPlayer
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,25 +11,28 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 import com.example.demo_musicsound.Audio.OfflineExporter
 import com.example.demo_musicsound.Audio.Sequencer
 import com.example.demo_musicsound.Audio.SoundManager
+import com.example.mybeat.ui.theme.*   // <- importa i colori del tuo tema
+import kotlinx.coroutines.launch
 
-// --- MODEL -------------------------------------------------------------------
+// ------------------------------------------------------------
+// MODEL
+// ------------------------------------------------------------
 
 private data class Pad(val label: String, val resName: String)
 
@@ -43,7 +46,9 @@ private val bankB = listOf(
 )
 private val allRes = (bankA + bankB).map { it.resName }
 
-// --- SCREEN ------------------------------------------------------------------
+// ------------------------------------------------------------
+// SCREEN
+// ------------------------------------------------------------
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
@@ -58,74 +63,82 @@ fun PadScreen(
 
     var bpm by remember { mutableStateOf(120) }
     var tab by remember { mutableStateOf(0) }     // 0 = A, 1 = B
-    var curStep by remember { mutableStateOf(0) } // highlight step in play
+    var curStep by remember { mutableStateOf(0) } // step corrente per highlight
 
-    // garantisco i pattern per tutti i nomi
+    // assicura che esistano tutti i pattern
     LaunchedEffect(Unit) { seq.ensureAll(allRes) }
 
     val page = if (tab == 0) bankA else bankB
     val pageRes = page.map { it.resName }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbar) }) { padding ->
+    Scaffold(
+        containerColor = GrayBg,
+        snackbarHost = { SnackbarHost(snackbar) }
+    ) { padding ->
         Column(
-            Modifier.fillMaxSize().padding(padding).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- TOP CONTROLS -------------------------------------------------
+
+            // --------------------------------------------------------
+            // TOP CONTROLS (BPM + Play/Clear/Export)
+            // --------------------------------------------------------
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // --- BPM CONTROLS ---
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedIconButton(
-                        onClick = {
-                            if (bpm > 60) { bpm -= 2; seq.setBpm(bpm) }
-                        },
-                        modifier = Modifier.size(42.dp)
-                    ) { Text("–") }
-
-                    Text("BPM $bpm", style = MaterialTheme.typography.titleMedium)
-
-                    OutlinedIconButton(
-                        onClick = {
-                            if (bpm < 200) { bpm += 2; seq.setBpm(bpm) }
-                        },
-                        modifier = Modifier.size(42.dp)
-                    ) { Text("+") }
-                }
-
-                // --- ACTION BUTTONS (Play, Clear, Share) ---
+                // BPM
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    OutlinedIconButton(
+                        onClick = { if (bpm > 60) { bpm -= 2; seq.setBpm(bpm) } },
+                        modifier = Modifier.size(44.dp),
+                        border = BorderStroke(1.dp, PurpleAccent),
+                        colors = IconButtonDefaults.outlinedIconButtonColors(contentColor = Color.White)
+                    ) { Text("–") }
+
+                    Text("BPM $bpm", style = MaterialTheme.typography.titleMedium, color = Color.White)
+
+                    OutlinedIconButton(
+                        onClick = { if (bpm < 200) { bpm += 2; seq.setBpm(bpm) } },
+                        modifier = Modifier.size(44.dp),
+                        border = BorderStroke(1.dp, PurpleAccent),
+                        colors = IconButtonDefaults.outlinedIconButtonColors(contentColor = Color.White)
+                    ) { Text("+") }
+                }
+
+                // Actions
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = {
                             if (running) seq.stop() else seq.start(scope, sound) { step -> curStep = step }
                         },
-                        modifier = Modifier.height(42.dp)
-                    ) {
-                        Text(if (running) "Stop" else "Play")
-                    }
+                        modifier = Modifier.height(44.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PurpleAccent,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text(if (running) "Stop" else "Play") }
 
                     FilledIconButton(
                         onClick = { seq.clear(pageRes) },
-                        modifier = Modifier.size(42.dp),
-                        shape = CircleShape
-                    ) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Clear Page")
-                    }
+                        modifier = Modifier.size(44.dp),
+                        shape = CircleShape,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = PurpleAccent,
+                            contentColor = Color.White
+                        )
+                    ) { Icon(Icons.Filled.Delete, contentDescription = "Clear Page") }
 
                     FilledIconButton(
                         onClick = {
-                            // share/export handler
                             scope.launch {
                                 try {
                                     val names = allRes.filter { resIdOf(context, it) != 0 }
@@ -138,11 +151,7 @@ fun PadScreen(
                                         )
                                     }
                                     val out = OfflineExporter.exportBeatToWav(
-                                        context = context,
-                                        bpm = bpm,
-                                        steps = steps,
-                                        dstSr = 44100,
-                                        tracks = tracks
+                                        context = context, bpm = bpm, steps = steps, dstSr = 44100, tracks = tracks
                                     )
                                     snackbar.showSnackbar("Exported: ${out.name}")
                                 } catch (t: Throwable) {
@@ -150,30 +159,35 @@ fun PadScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.size(42.dp),
+                        modifier = Modifier.size(44.dp),
                         shape = CircleShape,
-                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF7C4DFF))
-                    ) {
-                        Icon(Icons.Default.Done, contentDescription = "Export")
-                    }
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = PurpleAccent,
+                            contentColor = Color.White
+                        )
+                    ) { Icon(Icons.Filled.Done, contentDescription = "Export") }
                 }
             }
 
-            // --- BANKS --------------------------------------------------------
-            TabRow(selectedTabIndex = tab) {
-                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Bank A") })
-                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Bank B") })
-            }
+            // --------------------------------------------------------
+            // BANK SWITCHER (segmented pill flottante)
+            // --------------------------------------------------------
+            BankSwitch(
+                tab = tab,
+                onTab = { tab = it },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
-            // --- PAD GRID (3x2) ----------------------------------------------
-            // --- PAD GRID (3x2 rettangolari che entrano in 200.dp) ----------------------
+            // --------------------------------------------------------
+            // PAD GRID (3x2 rettangolari)
+            // --------------------------------------------------------
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp) // spazio totale disponibile per i pad
+                    .height(160.dp)
             ) {
-                val spacing = 8.dp                      // spazio tra le card
-                val itemHeight = 80.dp
+                val spacing = 10.dp
+                val itemHeight = 72.dp
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxSize(),
@@ -183,26 +197,94 @@ fun PadScreen(
                     items(page) { p ->
                         Card(
                             modifier = Modifier
-                                .fillMaxWidth()        // usa tutta la larghezza della cella
-                                .height(itemHeight)    // <-- rettangolare, non più quadrato
+                                .fillMaxWidth()
+                                .height(itemHeight)
                                 .clickable { sound.play(p.resName) },
-                            elevation = CardDefaults.cardElevation(4.dp)
+                            colors = CardDefaults.cardColors(
+                                containerColor = GraySurface,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(p.label)
+                                Text(p.label, fontWeight = FontWeight.SemiBold, color = Color.White)
                             }
                         }
                     }
                 }
             }
 
-            // --- SEQUENCER ----------------------------------------------------
+            // --------------------------------------------------------
+            // SEQUENCER
+            // --------------------------------------------------------
             SequencerGrid(seq = seq, tracks = page, currentStep = curStep)
         }
     }
 }
 
-// --- UI PARTIALS -------------------------------------------------------------
+// ------------------------------------------------------------
+// PARTIALS
+// ------------------------------------------------------------
+
+@Composable
+private fun BankSwitch(
+    tab: Int,
+    onTab: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val pill = RoundedCornerShape(18.dp)
+    val accent = MaterialTheme.colorScheme.primary
+
+    Row(
+        modifier = modifier
+            .clip(pill)
+            .background(PurpleBar)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        @Composable
+        fun Seg(text: String, selected: Boolean, onClick: () -> Unit) {
+            TextButton(
+                onClick = onClick,
+                modifier = Modifier.height(36.dp),
+                shape = RoundedCornerShape(14.dp),
+                border = null, // nessun bordo grigio
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = if (selected) accent else Color.Transparent,
+                    contentColor   = if (selected) Color.Black else Color.White
+                )
+            ) { Text(text, style = MaterialTheme.typography.labelLarge) }
+        }
+        Seg("Bank A", tab == 0) { onTab(0) }
+        Seg("Bank B", tab == 1) { onTab(1) }
+    }
+}
+
+@Composable
+private fun SegBtn(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val bg = if (selected) PurpleAccent else Color.Transparent
+    val fg = if (selected) Color.White else TextSecondary
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = bg,
+        border = if (selected) null else BorderStroke(1.dp, OutlineDark),
+        tonalElevation = if (selected) 2.dp else 0.dp
+    ) {
+        Text(
+            label,
+            color = fg,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+        )
+    }
+}
 
 @Composable
 private fun SequencerGrid(
@@ -210,16 +292,19 @@ private fun SequencerGrid(
     tracks: List<Pad>,
     currentStep: Int
 ) {
-    // colori/size compatti per far entrare i 16 step senza scroll orizzontale
-    val activeFill = Color(0xFFA5D6A7)
-    val activeBorder = Color(0xFF00C853)
-    val nowBg = Color(0xFFEDE7F6)
+    // palette coerente con dark
+    val activeFill = Color(0xFF3DDC84)          // verde attivo
+    val activeBorder = Color(0xFF2ECF74)
+    val nowBorder = PurpleAccent
+    val idleBorder = OutlineDark
+    val nowBg = nowBorder.copy(alpha = 0.12f)
     val boxSize = 20.dp
-    val gap = 4.dp
+    val gap = 3.dp
+    val corner = RoundedCornerShape(6.dp)
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(tracks.size) { idx ->
             val pad = tracks[idx]
@@ -228,8 +313,9 @@ private fun SequencerGrid(
             Column(Modifier.fillMaxWidth()) {
                 Text(
                     pad.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
                 Row(
                     Modifier.fillMaxWidth(),
@@ -244,20 +330,22 @@ private fun SequencerGrid(
                                 .size(boxSize)
                                 .background(
                                     when {
-                                        active -> activeFill
-                                        isNow -> nowBg
-                                        else -> Color.Transparent
-                                    }
+                                        active -> activeFill.copy(alpha = 0.18f)
+                                        isNow  -> nowBg
+                                        else   -> Color.Transparent
+                                    },
+                                    shape = corner
                                 )
                                 .border(
-                                    1.dp,
-                                    when {
+                                    width = 1.dp,
+                                    color = when {
                                         active -> activeBorder
-                                        isNow -> Color(0xFF7C4DFF)
-                                        else -> Color.Gray
-                                    }
+                                        isNow  -> nowBorder
+                                        else   -> idleBorder
+                                    },
+                                    shape = corner
                                 )
-                                .clickable { seq.toggle(pad.resName, i) } // toggle immediato (verde subito)
+                                .clickable { seq.toggle(pad.resName, i) }
                         )
                     }
                 }
@@ -266,7 +354,9 @@ private fun SequencerGrid(
     }
 }
 
-// --- UTILS -------------------------------------------------------------------
+// ------------------------------------------------------------
+// UTILS
+// ------------------------------------------------------------
 
 private fun resIdOf(context: android.content.Context, name: String): Int =
     context.resources.getIdentifier(name, "raw", context.packageName)
