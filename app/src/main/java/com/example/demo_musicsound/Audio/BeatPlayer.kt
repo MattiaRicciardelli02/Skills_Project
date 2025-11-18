@@ -3,7 +3,7 @@ package com.example.demo_musicsound.Audio
 import android.media.MediaPlayer
 import java.io.File
 
-/** Player semplice: può riprodurre un File con o senza loop. */
+/** Simple Player, play beats with loop or not */
 class BeatPlayer {
     private var mp: MediaPlayer? = null
 

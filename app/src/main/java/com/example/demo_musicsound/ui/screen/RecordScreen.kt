@@ -114,7 +114,7 @@ fun RecordScreen(
         }
     }
 
-    // tokens stilistici
+    // tokens for style
     val boxShape = RoundedCornerShape(24.dp)
     val boxPadding = 16.dp
     val sectionSpacing = 16.dp
@@ -182,7 +182,7 @@ fun RecordScreen(
             ) { Text("Refresh") }
         }
 
-        // Box che contiene la lista (max 3 elementi visibili)
+        // Box that contains the list
         Card(
             modifier = Modifier
                 .fillMaxWidth()

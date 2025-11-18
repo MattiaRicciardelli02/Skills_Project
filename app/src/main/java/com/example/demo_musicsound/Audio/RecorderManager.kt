@@ -13,14 +13,14 @@ class RecorderManager(private val context: Context) {
     private var mr: MediaRecorder? = null
     private var lastFile: File? = null
 
-    // Rinominata per evitare clash con getDir()
+    // Renamed to avoid clash with getDir()
     private val recordingsDir: File by lazy {
         File(context.getExternalFilesDir(null), "recordings").apply { mkdirs() }
     }
 
-    /** Avvia la registrazione e ritorna il file di output. */
+    /** Starts audio recording and returns the output file. */
     fun start(): File {
-        // Se qualcosa era rimasto aperto, rilascia
+        // Release any previous active recorder if left open
         try { mr?.release() } catch (_: Exception) {}
         mr = null
 
@@ -40,6 +40,7 @@ class RecorderManager(private val context: Context) {
             mr = local
             return out
         } catch (t: Throwable) {
+            // Clean up on failure
             try { local.reset(); local.release() } catch (_: Exception) {}
             mr = null
             try { if (out.exists()) out.delete() } catch (_: Exception) {}
@@ -47,36 +48,37 @@ class RecorderManager(private val context: Context) {
         }
     }
 
-    /** Massimo amp istantaneo per VU meter. */
+    /** Returns current max amplitude for a VU meter. */
     fun maxAmp(): Int = max(0, mr?.maxAmplitude ?: 0)
 
-    /** Ferma e rilascia. Ritorna il file registrato (se presente). */
+    /** Stops recording, releases resources and returns the saved file. */
     fun stop(): File? {
         val f = lastFile
         val local = mr
         mr = null
         return try {
             if (local != null) {
-                try { local.stop() } catch (_: IllegalStateException) { /* già fermo */ }
+                try { local.stop() } catch (_: IllegalStateException) { /* already stopped */ }
                 local.release()
             }
             f
         } catch (_: Throwable) {
+            // Ensure release on unexpected errors
             try { local?.release() } catch (_: Exception) {}
             f
         }
     }
 
-    /** Lista dei file (più recenti prima). */
+    /** Returns the list of recordings sorted by newest first. */
     fun listRecordings(): List<File> =
         recordingsDir.listFiles()?.sortedByDescending { it.lastModified() } ?: emptyList()
 
     fun delete(file: File): Boolean = file.delete()
 
-    /** Espone la cartella delle registrazioni. */
+    /** Exposes the folder containing all recordings. */
     fun getDir(): File = recordingsDir
 
-    /** Durata in ms (compatibile minSdk 24: niente .use) */
+    /** Returns audio duration in milliseconds (minSdk 24 compatible). */
     fun durationMs(file: File): Long? {
         val mmr = MediaMetadataRetriever()
         return try {

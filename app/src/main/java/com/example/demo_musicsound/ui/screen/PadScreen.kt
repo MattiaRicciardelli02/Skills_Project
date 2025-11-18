@@ -68,13 +68,13 @@ fun PadScreen(
     var tab by remember { mutableStateOf(0) }     // 0 = A, 1 = B
     var curStep by remember { mutableStateOf(0) } // step corrente per highlight
 
-    // assicura che esistano tutti i pattern
+    // ensures that exists all patterns
     LaunchedEffect(Unit) { seq.ensureAll(allRes) }
 
     val page = if (tab == 0) bankA else bankB
     val pageRes = page.map { it.resName }
 
-    // ---- dialog per salvataggio beat ----
+    // ---- dialog for beat saving ----
     var showNameDialog by remember { mutableStateOf(false) }
     var beatName by rememberSaveable { mutableStateOf(defaultBeatName()) }
     var exporting by remember { mutableStateOf(false) }
@@ -147,7 +147,7 @@ fun PadScreen(
 
                     FilledIconButton(
                         onClick = {
-                            // apre il popup per chiedere il nome file
+                            // opens popup for name selection operation
                             beatName = defaultBeatName()
                             showNameDialog = true
                         },
@@ -162,7 +162,7 @@ fun PadScreen(
             }
 
             // --------------------------------------------------------
-            // BANK SWITCHER (segmented pill flottante)
+            // BANK SWITCHER (segmented pill floating)
             // --------------------------------------------------------
             BankSwitch(
                 tab = tab,
@@ -171,7 +171,7 @@ fun PadScreen(
             )
 
             // --------------------------------------------------------
-            // PAD GRID (3x2 rettangolari)
+            // PAD GRID (3x2 rectangular)
             // --------------------------------------------------------
             BoxWithConstraints(
                 modifier = Modifier
@@ -236,7 +236,7 @@ fun PadScreen(
                         exporting = true
                         scope.launch {
                             try {
-                                // prepara i dati come facevi già
+                                // prepare data
                                 val names = allRes.filter { resIdOf(context, it) != 0 }
                                 val steps = seq.pattern(names.first()).size
                                 val tracks = names.map { name ->
@@ -256,7 +256,7 @@ fun PadScreen(
                                     tracks = tracks
                                 )
 
-                                // rinomina al nome scelto (evita conflitti)
+                                // rename without conflicts
                                 val finalFile = run {
                                     val target = java.io.File(out.parentFile, beatName.slugOrDefault() + ".wav")
                                     if (out.name != target.name) {

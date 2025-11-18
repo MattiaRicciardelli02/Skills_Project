@@ -76,8 +76,7 @@ class MainActivity : ComponentActivity() {
         seq = Sequencer()
         rec = RecorderManager(this)
 
-        // --- Preload TUTTI i 12 suoni (assicurati che esistano in res/raw) ---
-        // Puoi commentare temporaneamente quelli che non hai ancora.
+        // --- Sounds Preload ---
         sound.preload("kick", R.raw.kick)
         sound.preload("snare", R.raw.snare)
         sound.preload("hat", R.raw.hat)
@@ -104,7 +103,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Richiesta permesso microfono quando si entra nella tab Record per la prima volta
+    // Permission request for microphone
     private val recordPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -133,7 +132,7 @@ class MainActivity : ComponentActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        // Titolo centrato e bold
+                        // Title
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text(
                                 text = "MyBeat",
@@ -163,7 +162,6 @@ class MainActivity : ComponentActivity() {
                 when (tab) {
                     0 -> PadScreen(sound = sound, seq = seq)
                     1 -> RecordScreen(rec = rec)
-                    // Se in futuro riaggiungi “Export”, puoi rimettere: 2 -> ExportScreen()
                 }
             }
         }
@@ -181,7 +179,6 @@ class MainActivity : ComponentActivity() {
         val textOn  = Color.White
         val textOff = Color.White.copy(alpha = 0.65f)
 
-        // Altezza più sottile ma comoda al tocco
         Box(
             modifier = Modifier
                 .fillMaxWidth()

@@ -15,6 +15,6 @@ fun ExportScreen() {
         Text("Beat"); Slider(beat, { beat = it })
         Text("Voce"); Slider(voice, { voice = it })
         Button(onClick = { /* mock */ }) { Text("Esporta WAV") }
-        Text("Nella Lite l’export è dimostrativo: spiega il render offline nelle slide.")
+        Text("dimostrative Export")
     }
 }
